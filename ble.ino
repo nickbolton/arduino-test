@@ -7,12 +7,12 @@ void setupBLE() {
     while (1);
   }
   setupIncomingBLE();
-  setupOutgoingBLE();
+//  setupOutgoingBLE();
 }
 
 void handleBLEConnections() {
   handleBLEIncomingConnections();
-  handleBLEOutgoingConnections();
+//  handleBLEOutgoingConnections();
 }
 
 unsigned long leftShift(const byte b, const byte bits) {

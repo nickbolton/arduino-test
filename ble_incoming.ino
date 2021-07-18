@@ -80,10 +80,14 @@ void handleIncomingChannel() {
   updateIncomingMidiChannel(incomingChannel.value());
 }
 
-void sendOutgoingMidi(const byte status, const byte number, const byte value) {
+void sendOutgoingMidi(const byte status, const byte channel, const byte number, const byte value) {
+  Serial.println("sendOutgoingMidi");  
   BLEDevice central = BLE.central();
-  if (!central || !central.connected()) { return; }
-  unsigned long packet = leftShift(status, 24) + leftShift(number, 8) + value;
+  if (!central || !central.connected()) { 
+    Serial.println("BLE central not connected");  
+    return; 
+  }
+  unsigned long packet = leftShift(status, 24) + leftShift(channel, 16) + leftShift(number, 8) + value;
   Serial.print("Sending midi packet to mobile device: ");
   printData(packet);
   outgoingMidi.writeValue(packet);

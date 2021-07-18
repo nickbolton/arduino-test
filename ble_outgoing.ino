@@ -52,13 +52,6 @@ void handleBLEOutgoingConnections() {
   delay(2000);
 }
 
-void sendOutgoingMidiOLD(const byte status, const byte number, const byte value) {
-  packet = leftShift(status, 24) + leftShift(number, 8) + value;
-  Serial.print("Sending midi packet to mobile device: ");
-  printData(packet);
-  needsToSendValue = true;
-}
-
 void handleConnectionChanges() {
   BLEDevice peripheral = BLE.available();
   if (isOutgoingConnected) {

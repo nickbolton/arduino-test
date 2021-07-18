@@ -1,5 +1,5 @@
         ///////////////////////////////
-byte incomingMidiChannel = 12;
+byte incomingMidiChannel = 16;
 
 void setupIncomingMIDI() {
   Serial.println("setting incoming midi");
@@ -38,11 +38,11 @@ void handleControlChange(byte channel, byte number, byte value) {
     Serial.println(incomingMidiChannel);  
     return;
   }
-  Serial.print("rx cc channel: ");
+  Serial.print("rx cc channel22: ");
   Serial.print(channel);  
   Serial.print(", number: ");
   Serial.print(number);  
   Serial.print(", value: ");
   Serial.println(value);  
-  sendOutgoingMidi(0xb0, number, value);
+  sendOutgoingMidi(0xb0, channel, number, value);
 }

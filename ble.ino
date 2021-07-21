@@ -20,8 +20,7 @@ unsigned long leftShift(const byte b, const byte bits) {
   return value << bits;
 }
 
-void printData(const unsigned long data) {
-
+void printLong(const unsigned long data) {
     if (data < 0x10) {
       Serial.print("0");
     }
@@ -43,6 +42,12 @@ void printData(const unsigned long data) {
     if (data < 0x1000000) {
       Serial.print("0");
     }
+    Serial.print(data, HEX);
+}
 
-    Serial.println(data, HEX);
+void printByte(const byte data) {
+    if (data < 0x10) {
+      Serial.print("0");
+    }
+    Serial.print(data, HEX);
 }

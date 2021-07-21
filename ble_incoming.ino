@@ -70,7 +70,7 @@ void handleIncomingMidi() {
   if (incomingMidi.valueLength() != 4) { return; }
   long packet = incomingMidi.value();
   Serial.print("packet: 0x");
-  printData(packet);
+  printLong(packet);
   Serial.println();
   processPacket(packet);
 }
@@ -89,7 +89,8 @@ void sendOutgoingMidi(const byte status, const byte channel, const byte number, 
   }
   unsigned long packet = leftShift(status, 24) + leftShift(channel, 16) + leftShift(number, 8) + value;
   Serial.print("Sending midi packet to mobile device: ");
-  printData(packet);
+  printLong(packet);
+  Serial.println();
   outgoingMidi.writeValue(packet);
   outgoingMidi.writeValue(0l);
 }
@@ -100,8 +101,20 @@ void processPacket(const unsigned long data) {
   byte number =  (data & 0xffff) >> 8;
   byte value = data & 0xff;
   if (status == PC_STATUS) {
+    Serial.print("sending PC channel: ");
+    printByte(channel);
+    Serial.print(" number: ");
+    printByte(number);
+    Serial.println("");
     sendProgramChange(channel, number);
   } else if (status == CC_STATUS) {
+    Serial.print("sending CC channel: ");
+    printByte(channel);
+    Serial.print(" number: ");
+    printByte(number);
+    Serial.print(" value: ");
+    printByte(value);
+    Serial.println("");
     sendControlChange(channel, number, value);
   }
 }

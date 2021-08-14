@@ -44,9 +44,7 @@ void handleBLEOutgoingConnections() {
 //  Serial.print("Found characteristic: ");
 //  Serial.println(CHARACTERISTIC_UUID);
 
-  Serial.print("Sending characteristic packet: ");
-  printLong(packet);
-  Serial.println();
+  Serial.print(appendLong("Sending characteristic packet: ", packet) + "\n");
   
   characteristic.writeValue(packet);
 

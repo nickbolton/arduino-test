@@ -1,9 +1,14 @@
         ///////////////////////////////
 byte incomingMidiChannel = 16;
 
+extern byte lastOutgoingChannel;
+extern byte lastOutgoingNumber;
+extern byte lastOutgoingValue;
+
 void setupIncomingMIDI() {
   Serial.println("setting incoming midi");
   MIDI.begin(MIDI_CHANNEL_OMNI);
+  MIDI.turnThruOff();
   MIDI.setHandleProgramChange(handleProgramChange);
   MIDI.setHandleControlChange(handleControlChange);
 }
@@ -18,31 +23,34 @@ void processIncomingMIDI() {
 
 void handleProgramChange(byte channel, byte number) {
   if (channel != incomingMidiChannel) {
-    Serial.print("Dropping pc message on channel: ");  
-    Serial.print(channel);  
-    Serial.print(". Controller is configured for channel: ");  
-    Serial.println(incomingMidiChannel);  
+//    String channelString = appendByte("Dropping pc message on channel: ", channel);
+//    String configuredString = appendByte(" (", incomingMidiChannel);
+//    sendRemoteLogging(channelString + configuredString + ")\n");
     return;
   }
-  Serial.print("rx pc channel: ");
-  Serial.print(channel);  
-  Serial.print(", number: ");
-  Serial.println(number);  
+
+  String channelString = appendByte("rx pc channel: ", channel);  
+  String numberString = appendByte(", number: ", number);  
+  sendRemoteLogging(channelString + numberString + "\n");
 }
 
 void handleControlChange(byte channel, byte number, byte value) {
   if (channel != incomingMidiChannel) {
-    Serial.print("Dropping cc message on channel: ");  
-    Serial.print(channel);  
-    Serial.print(". Controller is configured for channel: ");  
-    Serial.println(incomingMidiChannel);  
+//    String channelString = appendByte("Dropping cc message on channel: ", channel);
+//    String configuredString = appendByte(" (", incomingMidiChannel);
+//    sendRemoteLogging(channelString + configuredString + ")\n");
     return;
   }
-  Serial.print("rx cc channel22: ");
-  Serial.print(channel);  
-  Serial.print(", number: ");
-  Serial.print(number);  
-  Serial.print(", value: ");
-  Serial.println(value);  
+
+  if (channel == lastOutgoingChannel && number == lastOutgoingNumber && value == lastOutgoingValue) {
+    return;
+  }
+
+  String channelString = appendByte("rx cc channel: ", channel);  
+  String incomingChannelString = appendByte(", incomingMidiChannel: ", incomingMidiChannel);  
+  String numberString = appendByte(", number: ", number);
+  String valueString = appendByte(", value: ", value);
+  sendRemoteLogging(channelString + incomingChannelString + numberString + valueString + "\n");
+  
   sendOutgoingMidi(0xb0, channel, number, value);
 }

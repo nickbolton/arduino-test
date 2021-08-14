@@ -7,47 +7,13 @@ void setupBLE() {
     while (1);
   }
   setupIncomingBLE();
-//  setupOutgoingBLE();
 }
 
 void handleBLEConnections() {
   handleBLEIncomingConnections();
-//  handleBLEOutgoingConnections();
 }
 
 unsigned long leftShift(const byte b, const byte bits) {
   unsigned long value = (unsigned long)b;
   return value << bits;
-}
-
-void printLong(const unsigned long data) {
-    if (data < 0x10) {
-      Serial.print("0");
-    }
-    if (data < 0x100) {
-      Serial.print("0");
-    }
-    if (data < 0x1000) {
-      Serial.print("0");
-    }
-    if (data < 0x10000) {
-      Serial.print("0");
-    }
-    if (data < 0x100000) {
-      Serial.print("0");
-    }
-    if (data < 0x1000000) {
-      Serial.print("0");
-    }
-    if (data < 0x1000000) {
-      Serial.print("0");
-    }
-    Serial.print(data, HEX);
-}
-
-void printByte(const byte data) {
-    if (data < 0x10) {
-      Serial.print("0");
-    }
-    Serial.print(data, HEX);
 }

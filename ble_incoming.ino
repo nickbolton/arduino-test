@@ -5,6 +5,7 @@ const char INCOMING_CHANNEL_UUID[37] = "653FA3B4-8DA0-4261-89A9-E35B39156B54";
 const char OUTGOING_MIDI_UUID[37] = "E143E11E-D44C-4C83-8195-D0041EBF09A1";
 const char LOGGING_UUID[37] = "AA369159-8F26-4FB5-A66F-ADF7D2D63008";
 
+const byte BANK_STATUS = 0x10;
 const byte PC_STATUS = 0xc0;
 const byte CC_STATUS = 0xb0;
 
@@ -72,11 +73,11 @@ void handleBLEIncomingConnections() {
 
 void handleIncomingMidi() {
   if (!incomingMidi.written()) { return; }
-  sendRemoteLogging(appendLong("packet length: ", (unsigned long)incomingMidi.valueLength()) + "\n");
-
+  sendRemoteLogging(appendLong("ble rx packet length: ", (unsigned long)incomingMidi.valueLength()) + "\n");
+  
   if (incomingMidi.valueLength() != 4) { return; }
   long packet = incomingMidi.value();
-  sendRemoteLogging(appendLong("packet: 0x", packet) + "\n");
+  sendRemoteLogging(appendLong("ble rx packet: 0x", packet) + "\n");
   processPacket(packet);
 }
 
@@ -88,7 +89,7 @@ void handleIncomingChannel() {
 void sendOutgoingMidi(const byte status, const byte channel, const byte number, const byte value) {
   sendRemoteLogging("sendOutgoingMidi\n");  
   unsigned long packet = leftShift(status, 24) + leftShift(channel, 16) + leftShift(number, 8) + value;
-  sendRemoteLogging(appendLong("Sending midi packet to mobile device: ", packet) + "\n");
+  sendRemoteLogging(appendLong("ble Sending midi packet to mobile device: ", packet) + "\n");
   outgoingMidi.writeValue(packet);
   outgoingMidi.writeValue(0l);
 }
@@ -98,13 +99,21 @@ void processPacket(const unsigned long data) {
   byte channel = (data & 0xffffff) >> 16;
   byte number =  (data & 0xffff) >> 8;
   byte value = data & 0xff;
-  if (status == PC_STATUS) {
-    String channelString = appendByte("sending PC channel: ", channel);
+  if (status == BANK_STATUS) {
+    String channelString = appendByte("ble sending BANK channel: ", channel);
+    String numberString = appendByte(" number: ", number);
+    String valueString = appendByte(" pc: ", value);
+    sendRemoteLogging(channelString + numberString + valueString + "\n");
+    sendControlChange(channel, 0, 0);
+    sendControlChange(channel, 0x20, number);
+    sendProgramChange(channel, value);
+  } else if (status == PC_STATUS) {
+    String channelString = appendByte("ble sending PC channel: ", channel);
     String numberString = appendByte(" number: ", number);
     sendRemoteLogging(channelString + numberString + "\n");
     sendProgramChange(channel, number);
   } else if (status == CC_STATUS) {
-    String channelString = appendByte("sending CC channel: ", channel);
+    String channelString = appendByte("ble sending CC channel: ", channel);
     String numberString = appendByte(" number: ", number);
     String valueString = appendByte(" value: ", value);
     sendRemoteLogging(channelString + numberString + valueString + "\n");

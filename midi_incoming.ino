@@ -1,9 +1,13 @@
-        ///////////////////////////////
+///////////////////////////////
+
 byte incomingMidiChannel = 16;
+byte resetDeviceControlNumber = 99;
 
 extern byte lastOutgoingChannel;
 extern byte lastOutgoingNumber;
 extern byte lastOutgoingValue;
+
+void(*reset) (void) = 0;
 
 void setupIncomingMIDI() {
   Serial.println("setting incoming midi");
@@ -43,6 +47,11 @@ void handleControlChange(byte channel, byte number, byte value) {
   }
 
   if (channel == lastOutgoingChannel && number == lastOutgoingNumber && value == lastOutgoingValue) {
+    return;
+  }
+
+  if (number == resetDeviceControlNumber && value > 0) {
+    reset();
     return;
   }
 

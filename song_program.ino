@@ -2,12 +2,20 @@ struct Ramp {
   unsigned long source;
   unsigned long start;
   unsigned long duration;
+  unsigned long dutyCycle;
+  unsigned long cycleStart;
   uint8_t startValue;
   uint8_t endValue;
   uint8_t repeating;
   uint8_t shape;
+  uint8_t reversed;
   int8_t currentValue;
 };
+
+const int MAX_EVENTS_SIZE = 1024;
+const uint8_t TRIANGLE_SHAPE = 0;
+const uint8_t SQUARE_SHAPE = 1;
+const uint8_t SINE_SHAPE = 2;
 
 unsigned long programEvents[MAX_EVENTS_SIZE];
 unsigned long eventDelays[MAX_EVENTS_SIZE];
@@ -51,17 +59,22 @@ void parseSongProgram(const uint8_t *programArray) {
       Ramp ramp;
       ramp.currentValue = -1;
       ramp.source = rampSource;
-      ramp.start = parseULong(programArray, idx) + programStartTime;            
+      ramp.start = parseULong(programArray, idx) + programStartTime;   
+      ramp.cycleStart = ramp.start;         
       idx += 4;
       ramp.duration = parseULong(programArray, idx);            
       idx += 4;   
       ramp.startValue = programArray[idx++];
       ramp.endValue = programArray[idx++];
       ramp.repeating = programArray[idx++];
+      ramp.reversed = 0;
       ramp.shape = programArray[idx++];
-      ramps[rampCount++] = ramp;
+      ramp.dutyCycle = parseULong(programArray, idx);      
 
-      sendRemoteLogging(appendLong("ramp: ", rampSource) + appendLong(", start: ", ramp.start) + appendLong(", duration: ", ramp.duration) + appendByte(", startValue: ", ramp.startValue) + appendByte(", endValue: ", ramp.endValue) + appendByte(", repeating: ", ramp.repeating) + appendByte(", shape: ", ramp.shape) + "\n");
+      if (ramp.duration > 0 && (!ramp.repeating || ramp.dutyCycle > 0)) {
+        ramps[rampCount++] = ramp;
+        sendRemoteLogging(appendLong("ramp: ", rampSource) + appendLong(", start: ", ramp.start) + appendLong(", duration: ", ramp.duration) + appendByte(", startValue: ", ramp.startValue) + appendByte(", endValue: ", ramp.endValue) + appendByte(", repeating: ", ramp.repeating) + appendByte(", shape: ", ramp.shape) + "\n");
+      }
     }
   }
 
@@ -91,18 +104,72 @@ void performRamp(int index, double progress) {
   processPacket(packet);  
 }
 
+double convertProgressToRampShape(int index, double progress) {
+  Ramp ramp = ramps[index];
+  
+  if (ramp.shape == SQUARE_SHAPE) {
+    return progress < 0.5 ? 0.0 : 1.0;
+  }
+  if (ramp.shape == SINE_SHAPE) {
+    return sin(1.570796326794897 * progress);
+  }
+  return progress;
+}
+
 void processRampingEvents() {
   unsigned long now = millis();
   
   for (int i=0; i<rampCount; i++) { 
     Ramp ramp = ramps[i];
-    unsigned long endTime = ramp.start + ramp.duration;
-    double progress = ((double)now - (double)ramp.start) / (double)ramp.duration;
-    if (now >= ramp.start) {
-      if (now <= endTime || ramp.currentValue != ramp.endValue) {
+    if (ramp.repeating) {
+      preProcessRepeatingRamp(i, now);
+    } else {
+      preProcessRamp(i, now);      
+    }
+  }
+}
+
+void preProcessRepeatingRamp(int index, unsigned long now) {
+  Ramp ramp = ramps[index];
+  unsigned long globalEndTime = ramp.start + ramp.duration;
+  unsigned long cycleEndTime = ramp.cycleStart + ramp.duration;
+  double overallProgress = ((double)now - (double)ramp.start) / (double)ramp.duration;
+  if (overallProgress >= 1.0) {
+    if (ramp.currentValue != ramp.endValue) {
+      performRamp(index, 1.0);      
+    }
+    return;
+  }
+  
+  double cycleProgress = ((double)now - (double)ramp.cycleStart) / (double)ramp.dutyCycle;
+  if (cycleProgress > 1.0) {
+    ramps[index].reversed = !ramps[index].reversed;
+    ramps[index].cycleStart += ramp.dutyCycle;
+    preProcessRepeatingRamp(index, now);
+    return;
+  }
+
+  if (now >= ramp.cycleStart) {
+//    sendRemoteLogging(appendLong("ramping packet now: ", now) + appendLong(" start ", ramp.start) + appendLong(" end ", ramp.start + ramp.duration) + appendLong(" progress: ", (unsigned long)(progress * 100.0)) + "\n");
+    double truncatedProgress = min(max(cycleProgress, 0.0), 1.0);
+    if (ramp.reversed) {
+      truncatedProgress = 1.0 - truncatedProgress;
+    }
+    double shapeProgress = convertProgressToRampShape(index, truncatedProgress);
+    performRamp(index, shapeProgress);      
+  }  
+}
+
+void preProcessRamp(int index, unsigned long now) {
+  Ramp ramp = ramps[index];
+  unsigned long endTime = ramp.start + ramp.duration;
+  double progress = ((double)now - (double)ramp.start) / (double)ramp.duration;
+  if (now >= ramp.start) {
+    if (now <= endTime || ramp.currentValue != ramp.endValue) {
 //        sendRemoteLogging(appendLong("ramping packet now: ", now) + appendLong(" start ", ramp.start) + appendLong(" end ", ramp.start + ramp.duration) + appendLong(" progress: ", (unsigned long)(progress * 100.0)) + "\n");
-        performRamp(i, min(max(progress, 0.0), 1.0));      
-      }
+      double truncatedProgress = min(max(progress, 0.0), 1.0);
+      double shapeProgress = convertProgressToRampShape(index, truncatedProgress);
+      performRamp(index, shapeProgress);      
     }
   }
 }

@@ -5,12 +5,11 @@ const char INCOMING_CHANNEL_UUID[37] = "653FA3B4-8DA0-4261-89A9-E35B39156B54";
 const char OUTGOING_MIDI_UUID[37] = "E143E11E-D44C-4C83-8195-D0041EBF09A1";
 const char LOGGING_UUID[37] = "AA369159-8F26-4FB5-A66F-ADF7D2D63008";
 
-const int MAX_PROGRAM_SIZE = 10000;
-const int MAX_EVENTS_SIZE = 1024;
-
 const byte BANK_STATUS = 0x10;
 const byte PC_STATUS = 0xc0;
 const byte CC_STATUS = 0xb0;
+
+const int MAX_PROGRAM_SIZE = 10000;
 
 bool isIncomingConnected = false;
 bool hasSentLoggingConnectionMessage = false;

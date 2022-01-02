@@ -12,6 +12,7 @@ void setup() {
 
 void loop() {
   processProgramEvents();
+  processRampingEvents();
   processIncomingMIDI();
   handleBLEConnections();
 }

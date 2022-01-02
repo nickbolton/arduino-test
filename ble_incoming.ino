@@ -5,7 +5,7 @@ const char INCOMING_CHANNEL_UUID[37] = "653FA3B4-8DA0-4261-89A9-E35B39156B54";
 const char OUTGOING_MIDI_UUID[37] = "E143E11E-D44C-4C83-8195-D0041EBF09A1";
 const char LOGGING_UUID[37] = "AA369159-8F26-4FB5-A66F-ADF7D2D63008";
 
-const int MAX_PROGRAM_SIZE = 4097;
+const int MAX_PROGRAM_SIZE = 10000;
 const int MAX_EVENTS_SIZE = 1024;
 
 const byte BANK_STATUS = 0x10;
@@ -14,12 +14,6 @@ const byte CC_STATUS = 0xb0;
 
 bool isIncomingConnected = false;
 bool hasSentLoggingConnectionMessage = false;
-
-unsigned long programEvents[MAX_EVENTS_SIZE];
-unsigned long eventDelays[MAX_EVENTS_SIZE];
-int programIndex = 0;
-int programEventCount = 0;
-unsigned long programStartTime = 0;
 
 BLEService midiService(SERVICE_UUID); // BLE Service
 
@@ -84,62 +78,7 @@ void handleIncomingMidi() {
   if (!songProgram.written()) { return; }
   sendRemoteLogging(appendLong("ble rx song program length: ", (unsigned long)songProgram.valueLength()) + "\n");
   if (songProgram.valueLength() <= 0) { return; }
-
-  programStartTime = millis();
-
-  const uint8_t *programArray = songProgram.value();
-
-//  for (int i=0; i<songProgram.valueLength(); i++) {
-//    sendRemoteLogging(appendByte("byte: ", programArray[i]) + "\n");
-//  }
-  
-  int count = (int)programArray[0];
-  int idx = 0;
-  programIndex = 0;
-  programEventCount = 0;
-
-  sendRemoteLogging(appendInt("song program count: ", count) + "\n");
-
-  while (idx < count*8) {
-    unsigned long p0 = (unsigned long)programArray[idx + 4];
-    unsigned long p1 = (unsigned long)programArray[idx + 5];
-    unsigned long p2 = (unsigned long)programArray[idx + 6];
-    unsigned long p3 = (unsigned long)programArray[idx + 7];
-    
-    unsigned long d0 = (unsigned long)programArray[idx + 8];
-    unsigned long d1 = (unsigned long)programArray[idx + 9];
-    unsigned long d2 = (unsigned long)programArray[idx + 10];
-    unsigned long d3 = (unsigned long)programArray[idx + 11];
-    
-    unsigned long packet = (p3 << 24) + (p2 << 16) + (p1 << 8) + p0;
-    unsigned long delay = (d3 << 24) + (d2 << 16) + (d1 << 8) + d0;
-    sendRemoteLogging(appendLong("packet: ", packet) + ", " + appendLong("delay: ", delay) + "\n");
-    programEvents[programEventCount] = packet;
-    eventDelays[programEventCount] = delay;
-    programEventCount++;
-    idx += 8;
-  }
-
-  sendRemoteLogging(appendLong("packet processing took: ", millis() - programStartTime) + " ms\n");
-
-  processProgramEvents();
-}
-
-void processProgramEvents() {
-  if (programIndex >= programEventCount) {
-    return;
-  }
-
-  unsigned long elapsedTime = millis() - programStartTime;
-
-  for (int i=programIndex; i<programEventCount; i++) {
-    if (eventDelays[i] > elapsedTime) {
-      return;
-    }
-    sendRemoteLogging(appendInt("processing packet: ", i) + appendInt(" of ", programEventCount) + appendLong(" ", programEvents[i]) + "\n");
-    processPacket(programEvents[i]);
-    programIndex++;
-  }
+  parseSongProgram(songProgram.value());
 }
 
 void handleIncomingChannel() {

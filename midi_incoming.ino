@@ -1,6 +1,6 @@
 ///////////////////////////////
 
-byte incomingMidiChannel = 16;
+byte incomingMidiChannel = 1;
 byte resetDeviceControlNumber = 99;
 
 extern byte lastOutgoingChannel;

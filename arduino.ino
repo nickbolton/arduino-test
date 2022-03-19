@@ -8,6 +8,7 @@ void setup() {
   Serial.println("Hey look, the Serial Monitor is working just fine!");
   setupMIDI();
   setupBLE();
+  setupStatus();
 }
 
 void loop() {
@@ -15,4 +16,5 @@ void loop() {
   processRampingEvents();
   processIncomingMIDI();
   handleBLEConnections();
+  processStatus();
 }

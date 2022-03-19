@@ -57,11 +57,13 @@ void logConnectionChange() {
       sendRemoteLogging("Connected to BLE central\n");
     }
     isIncomingConnected = true;
+    setConnectedStatus();
   } else {
     if (isIncomingConnected) {
       sendRemoteLogging("Disconnected from BLE central\n");
     }
     isIncomingConnected = false;
+    setDisconnectedStatus();
   }
 }
 

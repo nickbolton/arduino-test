@@ -19,6 +19,7 @@ const uint8_t SINE_SHAPE = 2;
 
 unsigned long programEvents[MAX_EVENTS_SIZE];
 unsigned long eventDelays[MAX_EVENTS_SIZE];
+unsigned long colors[MAX_EVENTS_SIZE];
 Ramp ramps[MAX_EVENTS_SIZE];
 
 int rampCount = 0;
@@ -48,12 +49,16 @@ void parseSongProgram(const uint8_t *programArray) {
     idx += 4;
     unsigned long delay = parseULong(programArray, idx);
     idx += 4;
+    unsigned long color = parseULong(programArray, idx);
+    idx += 4;
     unsigned long rampSource = parseULong(programArray, idx);
     idx += 4;
 
     sendRemoteLogging(appendLong("packet: ", packet) + ", " + appendLong("delay: ", delay) + "\n");
     programEvents[programEventCount] = packet;
-    eventDelays[programEventCount++] = delay;
+    colors[programEventCount] = color;
+    eventDelays[programEventCount] = delay;
+    programEventCount++;
 
     if (rampSource != 0) {
       Ramp ramp;
@@ -185,8 +190,9 @@ void processProgramEvents() {
     if (eventDelays[i] > elapsedTime) {
       return;
     }
-    sendRemoteLogging(appendInt("processing packet: ", i) + appendInt(" of ", programEventCount) + appendLong(" ", programEvents[i]) + "\n");
+    sendRemoteLogging(appendInt("processing packet: ", i) + appendInt(" of ", programEventCount) + appendLong(" color: ", colors[i]) + appendLong(" ", programEvents[i]) + "\n");
     processPacket(programEvents[i]);
+    setCurrentColor(colors[i]);
     programIndex++;
   }
 }

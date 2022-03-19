@@ -4,8 +4,8 @@ const int RED_PIN =  3;
 const int GREEN_PIN =  4;
 const int BLUE_PIN =  5;
 
-const int LED_ON = LOW;
-const int LED_OFF = HIGH;
+const int LED_ON = 0;
+const int LED_OFF = 255;
 
 unsigned long currentColor = 0;
 
@@ -69,10 +69,10 @@ void showCurrentColor() {
   int green = 255 - ((currentColor & 0xffff) >> 8);
   int blue = 255 - (currentColor & 0xff);
 
-  String redString = appendInt("ble showing current color red: ", red);
-  String greenString = appendInt(" green: ", green);
-  String blueString = appendInt(" blue: ", blue);
-  sendRemoteLogging(redString + greenString + blueString + "\n");
+//  String redString = appendInt("ble showing current color red: ", red);
+//  String greenString = appendInt(" green: ", green);
+//  String blueString = appendInt(" blue: ", blue);
+//  sendRemoteLogging(redString + greenString + blueString + "\n");
   
   analogWrite(RED_PIN, red);
   analogWrite(GREEN_PIN, green);
@@ -80,28 +80,25 @@ void showCurrentColor() {
 }
 
 void showYellowLED() {
-  digitalWrite(RED_PIN, LED_ON);
-  digitalWrite(GREEN_PIN, LED_ON);
-  digitalWrite(BLUE_PIN, LED_OFF);    
+  analogWrite(RED_PIN, LED_ON);
+  analogWrite(GREEN_PIN, LED_ON);
+  analogWrite(BLUE_PIN, LED_OFF);    
 }
 
 void showGreenLED() {
-
-  sendRemoteLogging("showing green LED\n");
-
-  digitalWrite(RED_PIN, LED_OFF);
-  digitalWrite(GREEN_PIN, LED_ON);
-  digitalWrite(BLUE_PIN, LED_OFF);  
+  analogWrite(RED_PIN, LED_OFF);
+  analogWrite(GREEN_PIN, LED_ON);
+  analogWrite(BLUE_PIN, LED_OFF);  
 }
 
 void showRedLED() {
-  digitalWrite(RED_PIN, LED_ON);
-  digitalWrite(GREEN_PIN, LED_OFF);
-  digitalWrite(BLUE_PIN, LED_OFF);  
+  analogWrite(RED_PIN, LED_ON);
+  analogWrite(GREEN_PIN, LED_OFF);
+  analogWrite(BLUE_PIN, LED_OFF);  
 }
 
 void clearLEDs() {
-  digitalWrite(RED_PIN, LED_OFF);
-  digitalWrite(GREEN_PIN, LED_OFF);
-  digitalWrite(BLUE_PIN, LED_OFF);    
+  analogWrite(RED_PIN, LED_OFF);
+  analogWrite(GREEN_PIN, LED_OFF);
+  analogWrite(BLUE_PIN, LED_OFF);    
 }

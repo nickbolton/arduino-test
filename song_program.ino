@@ -51,8 +51,9 @@ void parseSongProgram(const uint8_t *programArray) {
     idx += 4;
     unsigned long color = parseULong(programArray, idx);
     idx += 4;
-    unsigned long rampSource = parseULong(programArray, idx);
-    idx += 4;
+    unsigned long rampSource = 0l;
+//    unsigned long rampSource = parseULong(programArray, idx);
+//    idx += 4;
 
     sendRemoteLogging(appendLong("packet: ", packet) + ", " + appendLong("delay: ", delay) + "\n");
     programEvents[programEventCount] = packet;

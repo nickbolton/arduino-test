@@ -72,7 +72,9 @@ void parseSongProgram(const uint8_t *programArray) {
   idx += ULONG_SIZE;
   unsigned long stopCount = parseULong(programArray, idx);
   idx += ULONG_SIZE;
-  unsigned long eventsCount = parseULong(programArray, idx);
+  unsigned long eventCount = parseULong(programArray, idx);
+  idx += ULONG_SIZE;
+  unsigned long rCount = parseULong(programArray, idx);
   idx += ULONG_SIZE;
 
   switch (newStatus) {
@@ -90,6 +92,8 @@ void parseSongProgram(const uint8_t *programArray) {
       status = newStatus;
       startEventsCount = startCount;
       stopEventsCount = stopCount;
+      programEventCount = eventCount;
+      rampCount = rCount;
       sendRemoteLogging("Song Program LOADED\n");
       break;
     case RUNNING:
@@ -97,7 +101,7 @@ void parseSongProgram(const uint8_t *programArray) {
       minEventTime = firstEventTime;
       status = newStatus;
       sendRemoteLogging(appendLong("Song Program STARTED at ", firstEventTime) + "\n");
-      if (eventsCount > 0) {
+      if (eventCount > 0) {
         resetProgram();
       } else {
         processProgramEvents(); 
@@ -128,66 +132,70 @@ void parseSongProgram(const uint8_t *programArray) {
   unsigned long parseStartTime = millis();  
   resetProgram();  
 
-  unsigned long startEventIndex = 0;
-  while (startEventIndex < startEventsCount) {
-    startEvents[startEventIndex] = parseULong(programArray, idx);
+  unsigned long eventIndex = 0;
+  while (eventIndex < startEventsCount && idx < songProgram.valueLength()) {
+    startEvents[eventIndex] = parseULong(programArray, idx);
     idx += ULONG_SIZE;
-    startEventIndex ++;
+    eventIndex++;
   }
 
   sendRemoteLogging(appendInt("startEventsCount: ", startEventsCount) + "\n");
 
-  unsigned long stopEventIndex = 0;
-  while (stopEventIndex < stopEventsCount) {
-    stopEvents[stopEventIndex] = parseULong(programArray, idx);
+  eventIndex = 0;
+  while (eventIndex < stopEventsCount && idx < songProgram.valueLength()) {
+    stopEvents[eventIndex] = parseULong(programArray, idx);
     idx += ULONG_SIZE;
-    stopEventIndex ++;
+    eventIndex++;
   }
 
   sendRemoteLogging(appendInt("stopEventsCount: ", stopEventsCount) + "\n");
   sendRemoteLogging(appendInt("event parsing start idx: ", idx) + "\n");
 
-  while (idx < songProgram.valueLength()) {    
+  eventIndex = 0;
+  while (eventIndex < programEventCount && idx < songProgram.valueLength()) {
     unsigned long packet = parseULong(programArray, idx);
     idx += ULONG_SIZE;
     unsigned long delay = parseULong(programArray, idx);
     idx += ULONG_SIZE;
     unsigned long color = parseULong(programArray, idx);
     idx += ULONG_SIZE;
-    unsigned long rampSource = parseULong(programArray, idx);
-    idx += ULONG_SIZE;
 
     sendRemoteLogging(appendLong("packet: ", packet) + ", " + appendLong("delay: ", delay) + "\n");
-    programEvents[programEventCount] = packet;
-    colors[programEventCount] = color;
-    eventDelays[programEventCount] = delay;
-    programEventCount++;
-
-    if (rampSource != 0) {
-      Ramp ramp;
-      ramp.currentValue = -1;
-      ramp.source = rampSource;
-      ramp.start = parseULong(programArray, idx) + programStartTime;   
-      ramp.cycleStart = ramp.start;         
-      idx += ULONG_SIZE;
-      ramp.duration = parseULong(programArray, idx);            
-      idx += ULONG_SIZE;
-      ramp.startValue = programArray[idx++];
-      ramp.endValue = programArray[idx++];
-      ramp.repeating = programArray[idx++];
-      ramp.reversed = 0;
-      ramp.shape = programArray[idx++];
-      ramp.dutyCycle = parseULong(programArray, idx);      
-
-      if (ramp.duration > 0 && (!ramp.repeating || ramp.dutyCycle > 0)) {
-        ramps[rampCount++] = ramp;
-        sendRemoteLogging(appendLong("ramp: ", rampSource) + appendLong(", start: ", ramp.start) + appendLong(", duration: ", ramp.duration) + appendByte(", startValue: ", ramp.startValue) + appendByte(", endValue: ", ramp.endValue) + appendByte(", repeating: ", ramp.repeating) + appendByte(", shape: ", ramp.shape) + "\n");
-      }
-    }
+    programEvents[eventIndex] = packet;
+    colors[eventIndex] = color;
+    eventDelays[eventIndex] = delay;
+    eventIndex++;
   }
 
-  sendRemoteLogging(appendInt("idx: ", idx) + "\n");
-  sendRemoteLogging(appendInt("song program count: ", programEventCount) + "\n");
+  int rampIndex = 0;
+  while (rampIndex < rampCount && idx < songProgram.valueLength()) {
+    unsigned long rampSource = parseULong(programArray, idx);
+    idx += ULONG_SIZE;
+    
+    Ramp ramp;
+    ramp.currentValue = -1;
+    ramp.source = rampSource;
+    idx += ULONG_SIZE;
+    ramp.start = parseULong(programArray, idx) + programStartTime;   
+    idx += ULONG_SIZE;
+    ramp.cycleStart = ramp.start;         
+    ramp.duration = parseULong(programArray, idx);            
+    idx += ULONG_SIZE;
+    ramp.startValue = programArray[idx++];
+    ramp.endValue = programArray[idx++];
+    ramp.repeating = programArray[idx++];
+    ramp.reversed = 0;
+    ramp.shape = programArray[idx++];
+    ramp.dutyCycle = parseULong(programArray, idx);      
+    idx += ULONG_SIZE;
+
+    if (ramp.duration > 0 && (!ramp.repeating || ramp.dutyCycle > 0)) {
+      ramps[rampIndex++] = ramp;
+      sendRemoteLogging(appendLong("ramp: ", rampSource) + appendLong(", start: ", ramp.start) + appendLong(", duration: ", ramp.duration) + appendByte(", startValue: ", ramp.startValue) + appendByte(", endValue: ", ramp.endValue) + appendByte(", repeating: ", ramp.repeating) + appendByte(", shape: ", ramp.shape) + "\n");
+    }
+  }
+  rampCount = rampIndex;
+
   sendRemoteLogging(appendLong("song program parsing took: ", millis() - parseStartTime) + " ms\n");
 
   processProgramEvents();

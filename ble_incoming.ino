@@ -147,6 +147,12 @@ String appendByte(String str, const byte data) {
   return str + buf; 
 }
 
+String appendUint8(String str, const uint8_t data) {
+  char buf[4];
+  snprintf(buf, 4, "%02X", data);
+  return str + buf; 
+}
+
 String appendInt(String str, const int data) {
   char buf[6];
   snprintf(buf, 6, "%04X", data);

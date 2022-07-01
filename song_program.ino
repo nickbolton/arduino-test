@@ -180,8 +180,7 @@ void parseSongProgram(const uint8_t *programArray) {
     Ramp ramp;
     ramp.currentValue = -1;
     ramp.source = rampSource;
-    idx += ULONG_SIZE;
-    ramp.start = parseULong(programArray, idx) + programStartTime;   
+    ramp.start = parseULong(programArray, idx);   
     idx += ULONG_SIZE;
     ramp.cycleStart = ramp.start;         
     ramp.duration = parseULong(programArray, idx);            
@@ -211,6 +210,11 @@ void parseSongProgram(const uint8_t *programArray) {
 void performRamp(int index, double progress) {
   Ramp ramp = ramps[index];
   int8_t value = ramp.startValue + (int8_t)((double)(ramp.endValue - ramp.startValue) * progress);
+//  sendRemoteLogging(appendUint8("ramp.startValue: ", ramp.startValue) + "\n");
+//  sendRemoteLogging(appendUint8("ramp.endValue: ", ramp.endValue) + "\n");
+//  sendRemoteLogging(appendUint8("ramp.currentValue: ", ramp.currentValue) + "\n");
+//  sendRemoteLogging(appendDouble("progress: ", progress) + "\n");
+//  sendRemoteLogging(appendUint8("value: ", value) + "\n");
   if (value == ramp.currentValue) {
     return;
   }
@@ -282,10 +286,21 @@ void preProcessRepeatingRamp(int index, unsigned long now) {
 
 void preProcessRamp(int index, unsigned long now) {
   Ramp ramp = ramps[index];
+  unsigned long elapsedTime = now - programStartTime;
   unsigned long endTime = ramp.start + ramp.duration;
-  double progress = ((double)now - (double)ramp.start) / (double)ramp.duration;
-  if (now >= ramp.start) {
-    if (now <= endTime || ramp.currentValue != ramp.endValue) {
+  double progress = ((double)elapsedTime - (double)ramp.start + (double)minEventTime) / (double)ramp.duration;
+
+//  sendRemoteLogging(appendLong("minEventTime: ", minEventTime) + "\n");
+//  sendRemoteLogging(appendLong("elapsedTime: ", elapsedTime) + "\n");
+//  sendRemoteLogging(appendLong("ramp.start: ", ramp.start) + "\n");
+//  sendRemoteLogging(appendLong("ramp.start - minEventTime: ", ramp.start - minEventTime) + "\n");
+
+  if (elapsedTime >= ramp.start - minEventTime) {
+//    sendRemoteLogging(appendLong("endTime: ", endTime) + "\n");
+//    sendRemoteLogging(appendLong("endTime - minEventTime: ", endTime - minEventTime) + "\n");
+//    sendRemoteLogging(appendUint8("ramp.currentValue: ", ramp.currentValue) + "\n");
+//    sendRemoteLogging(appendUint8("ramp.endValue: ", ramp.endValue) + "\n");
+    if (elapsedTime <= endTime - minEventTime || ramp.currentValue != ramp.endValue) {
 //        sendRemoteLogging(appendLong("ramping packet now: ", now) + appendLong(" start ", ramp.start) + appendLong(" end ", ramp.start + ramp.duration) + appendLong(" progress: ", (unsigned long)(progress * 100.0)) + "\n");
       double truncatedProgress = min(max(progress, 0.0), 1.0);
       double shapeProgress = convertProgressToRampShape(index, truncatedProgress);

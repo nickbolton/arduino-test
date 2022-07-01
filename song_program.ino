@@ -100,6 +100,7 @@ void parseSongProgram(const uint8_t *programArray) {
       if (eventCount > 0) {
         resetProgram();
       } else {
+        programIndex = 0;
         processProgramEvents(); 
         return;
       }
@@ -335,7 +336,7 @@ void processProgramEvents() {
 
 void processRunningEvents() {
 
-//  sendRemoteLogging(appendLong("status: ", status) + "\n");
+//  sendRemoteLogging(appendLong("status: ", status) + appendInt(", programIndex: ", programIndex) + "\n");
   
   if (programIndex >= programEventCount || status != RUNNING) {
 //    sendRemoteLogging(appendLong("programIndex: ", programIndex) + "\n");
@@ -351,11 +352,6 @@ void processRunningEvents() {
 //  sendRemoteLogging(appendLong("elapsedTime: ", elapsedTime) + "\n");
 //  sendRemoteLogging(appendInt("programIndex: ", programIndex) + "\n");
 //  sendRemoteLogging(appendLong("eventDelays[programIndex]: ", eventDelays[programIndex]) + "\n");
-
-  if (now < minEventTime) {
-//    sendRemoteLogging("Bailing 2…\n");
-    return;
-  }
 
   // first skip all events prior to minEventTime
   for (; programIndex<programEventCount; programIndex++) {

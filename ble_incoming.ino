@@ -141,6 +141,12 @@ String appendLong(String str, const unsigned long data) {
   return str + buf; 
 }
 
+String appendLongDecimal(String str, const unsigned long data) {
+  char buf[10];
+  snprintf(buf, 10, "%d", data);
+  return str + buf; 
+}
+
 String appendDouble(String str, const double data) {
   char buf[1000];
   snprintf(buf, 1000, "%.3f", data);
@@ -162,6 +168,12 @@ String appendUint8(String str, const uint8_t data) {
 String appendInt(String str, const int data) {
   char buf[6];
   snprintf(buf, 6, "%04X", data);
+  return str + buf; 
+}
+
+String appendIntDecimal(String str, const int data) {
+  char buf[10];
+  snprintf(buf, 10, "%d", data);
   return str + buf; 
 }
 

@@ -255,18 +255,12 @@ void processRampingEvents() {
   for (int i=0; i<rampCount; i++) { 
     Ramp ramp = ramps[i];
     preProcessRepeatingRamp(i, now);
-//    if (ramp.repeating) {
-//      preProcessRepeatingRamp(i, now);
-//    } else {
-//      preProcessRamp(i, now);      
-//    }
   }
 }
 
 void preProcessRepeatingRamp(int index, unsigned long now) {
   Ramp ramp = ramps[index];
   unsigned long elapsedTime = now - programStartTime;
-//  double overallProgress = ((double)now - (double)ramp.start) / (double)ramp.duration;
   double overallProgress = ((double)elapsedTime - (double)ramp.start + (double)minEventTime) / (double)ramp.duration;
   if (overallProgress >= 1.0) {
     if (ramp.currentValue != ramp.endValue && ramp.shape != SQUARE_SHAPE) {
@@ -275,7 +269,6 @@ void preProcessRepeatingRamp(int index, unsigned long now) {
     return;
   }
   
-//  double cycleProgress = ((double)now - (double)ramp.cycleStart) / (double)ramp.dutyCycle;
   double cycleProgress = ((double)elapsedTime - (double)ramp.cycleStart + (double)minEventTime) / (double)ramp.dutyCycle;
   if (cycleProgress > 1.0) {
     ramps[index].reversed = !ramps[index].reversed;
@@ -294,31 +287,6 @@ void preProcessRepeatingRamp(int index, unsigned long now) {
     performRamp(index, shapeProgress, truncatedProgress);      
   }  
 }
-
-//void preProcessRamp(int index, unsigned long now) {
-//  Ramp ramp = ramps[index];
-//  unsigned long elapsedTime = now - programStartTime;
-//  unsigned long endTime = ramp.start + ramp.duration;
-//  double progress = ((double)elapsedTime - (double)ramp.start + (double)minEventTime) / (double)ramp.duration;
-//
-////  sendRemoteLogging(appendLong("minEventTime: ", minEventTime) + "\n");
-////  sendRemoteLogging(appendLong("elapsedTime: ", elapsedTime) + "\n");
-////  sendRemoteLogging(appendLong("ramp.start: ", ramp.start) + "\n");
-////  sendRemoteLogging(appendLong("ramp.start - minEventTime: ", ramp.start - minEventTime) + "\n");
-//
-//  if (elapsedTime >= ramp.start - minEventTime) {
-////    sendRemoteLogging(appendLong("endTime: ", endTime) + "\n");
-////    sendRemoteLogging(appendLong("endTime - minEventTime: ", endTime - minEventTime) + "\n");
-////    sendRemoteLogging(appendUint8("ramp.currentValue: ", ramp.currentValue) + "\n");
-////    sendRemoteLogging(appendUint8("ramp.endValue: ", ramp.endValue) + "\n");
-//    if (elapsedTime <= endTime - minEventTime || ramp.currentValue != ramp.endValue) {
-////        sendRemoteLogging(appendLong("ramping packet now: ", now) + appendLong(" start ", ramp.start) + appendLong(" end ", ramp.start + ramp.duration) + appendLong(" progress: ", (unsigned long)(progress * 100.0)) + "\n");
-//      double truncatedProgress = min(max(progress, 0.0), 1.0);
-//      double shapeProgress = convertProgressToRampShape(index, truncatedProgress);
-//      performRamp(index, shapeProgress, truncatedProgress);      
-//    }
-//  }
-//}
 
 void processStartEvents() {
   if (processedStartEvents) {

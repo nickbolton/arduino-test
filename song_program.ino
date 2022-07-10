@@ -6,7 +6,6 @@ struct Ramp {
   unsigned long cycleStart;
   uint8_t startValue;
   uint8_t endValue;
-  uint8_t repeating;
   uint8_t shape;
   uint8_t reversed;
   int8_t currentValue;
@@ -185,17 +184,16 @@ void parseSongProgram(const uint8_t *programArray) {
     ramp.cycleStart = ramp.start;         
     ramp.duration = parseULong(programArray, idx);            
     idx += ULONG_SIZE;
-    ramp.startValue = programArray[idx++];
-    ramp.endValue = programArray[idx++];
-    ramp.repeating = programArray[idx++];
-    ramp.reversed = 0;
-    ramp.shape = programArray[idx++];
     ramp.dutyCycle = parseULong(programArray, idx);      
     idx += ULONG_SIZE;
+    ramp.startValue = programArray[idx++];
+    ramp.endValue = programArray[idx++];
+    ramp.reversed = 0;
+    ramp.shape = programArray[idx++];
 
-    if (ramp.duration > 0 && (!ramp.repeating || ramp.dutyCycle > 0)) {
+    if (ramp.duration > 0 && ramp.dutyCycle > 0) {
       ramps[rampIndex++] = ramp;
-      sendRemoteLogging(appendLong("ramp: ", rampSource) + appendLong(", start: ", ramp.start) + appendLong(", duration: ", ramp.duration) + appendByte(", startValue: ", ramp.startValue) + appendByte(", endValue: ", ramp.endValue) + appendByte(", repeating: ", ramp.repeating) + appendByte(", shape: ", ramp.shape) + "\n");
+      sendRemoteLogging(appendLong("ramp: ", rampSource) + appendLong(", start: ", ramp.start) + appendLong(", duration: ", ramp.duration) + appendByte(", startValue: ", ramp.startValue) + appendByte(", endValue: ", ramp.endValue) + appendByte(", shape: ", ramp.shape) + "\n");
     }
   }
   rampCount = rampIndex;
@@ -221,7 +219,7 @@ void performRamp(int index, double progress) {
   ramps[index].currentValue = value;
   unsigned long basePacket =  ramp.source & 0xFFFFFF00;
   unsigned long packet = basePacket + (uint8_t)value;
-  sendRemoteLogging(appendLong("ramping packet: ", ramp.source) + appendLong(" base packet: ", basePacket) + appendLong(" value ", value) + appendLong(" updated: ", packet) + "\n");
+  sendRemoteLogging(appendLong("ramping packet: ", ramp.source) + appendLong(" base packet: ", basePacket) + appendLong(" value ", value) + appendLong(" updated: ", packet) + appendDouble(" progress: ", progress) + "\n");
   processPacket(packet);  
 }
 
@@ -245,19 +243,20 @@ void processRampingEvents() {
   
   for (int i=0; i<rampCount; i++) { 
     Ramp ramp = ramps[i];
-    if (ramp.repeating) {
-      preProcessRepeatingRamp(i, now);
-    } else {
-      preProcessRamp(i, now);      
-    }
+    preProcessRepeatingRamp(i, now);
+//    if (ramp.repeating) {
+//      preProcessRepeatingRamp(i, now);
+//    } else {
+//      preProcessRamp(i, now);      
+//    }
   }
 }
 
 void preProcessRepeatingRamp(int index, unsigned long now) {
   Ramp ramp = ramps[index];
-  unsigned long globalEndTime = ramp.start + ramp.duration;
-  unsigned long cycleEndTime = ramp.cycleStart + ramp.duration;
-  double overallProgress = ((double)now - (double)ramp.start) / (double)ramp.duration;
+  unsigned long elapsedTime = now - programStartTime;
+//  double overallProgress = ((double)now - (double)ramp.start) / (double)ramp.duration;
+  double overallProgress = ((double)elapsedTime - (double)ramp.start + (double)minEventTime) / (double)ramp.duration;
   if (overallProgress >= 1.0) {
     if (ramp.currentValue != ramp.endValue) {
       performRamp(index, 1.0);      
@@ -265,7 +264,8 @@ void preProcessRepeatingRamp(int index, unsigned long now) {
     return;
   }
   
-  double cycleProgress = ((double)now - (double)ramp.cycleStart) / (double)ramp.dutyCycle;
+//  double cycleProgress = ((double)now - (double)ramp.cycleStart) / (double)ramp.dutyCycle;
+  double cycleProgress = ((double)elapsedTime - (double)ramp.cycleStart + (double)minEventTime) / (double)ramp.dutyCycle;
   if (cycleProgress > 1.0) {
     ramps[index].reversed = !ramps[index].reversed;
     ramps[index].cycleStart += ramp.dutyCycle;
@@ -273,7 +273,7 @@ void preProcessRepeatingRamp(int index, unsigned long now) {
     return;
   }
 
-  if (now >= ramp.cycleStart) {
+  if (elapsedTime >= ramp.cycleStart + (double)minEventTime) {
 //    sendRemoteLogging(appendLong("ramping packet now: ", now) + appendLong(" start ", ramp.start) + appendLong(" end ", ramp.start + ramp.duration) + appendLong(" progress: ", (unsigned long)(progress * 100.0)) + "\n");
     double truncatedProgress = min(max(cycleProgress, 0.0), 1.0);
     if (ramp.reversed) {

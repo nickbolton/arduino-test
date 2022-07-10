@@ -141,6 +141,12 @@ String appendLong(String str, const unsigned long data) {
   return str + buf; 
 }
 
+String appendDouble(String str, const double data) {
+  char buf[1000];
+  snprintf(buf, 1000, "%.3f", data);
+  return str + buf; 
+}
+
 String appendByte(String str, const byte data) {
   char buf[4];
   snprintf(buf, 4, "%02X", data);

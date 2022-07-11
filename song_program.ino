@@ -102,6 +102,7 @@ void parseSongProgram(const uint8_t *programArray) {
       if (eventCount > 0) {
         resetProgram();
       } else {
+        resetRamps();
         programIndex = 0;
         processProgramEvents(); 
         return;
@@ -112,11 +113,13 @@ void parseSongProgram(const uint8_t *programArray) {
         return;
       }
       status = newStatus;
+      resetRamps();
       sendRemoteLogging("Song Program PAUSED\n");
       return;
     case STOPPED:
       status = newStatus;
       sendRemoteLogging("Song Program STOPPED\n");
+      resetRamps();
       processProgramEvents();
       return;
     default:
@@ -208,6 +211,14 @@ void parseSongProgram(const uint8_t *programArray) {
 //  sendRemoteLogging(appendBuffer("song program buffer: ", idx, programArray) + "\n");
 }
 
+void resetRamps() {
+  for (int i=0; i<rampCount; i++) { 
+    ramps[i].currentValue = -1;
+    ramps[i].reversed = false;
+    ramps[i].cycleStart = ramps[i].start;
+  }
+}
+
 void performRamp(int index, double progress, double linearProgress) {
   Ramp ramp = ramps[index];
   int8_t value = ramp.startValue + (int8_t)((double)(ramp.endValue - ramp.startValue) * progress);
@@ -247,18 +258,18 @@ double convertProgressToRampShape(int index, double progress) {
 }
 
 void processRampingEvents() {
+//  sendRemoteLogging(appendLong("status: ", status) + "\n");
   if (status != RUNNING) {
     return;
   }
   unsigned long now = millis();
   
   for (int i=0; i<rampCount; i++) { 
-    Ramp ramp = ramps[i];
-    preProcessRepeatingRamp(i, now);
+    preProcessRamp(i, now);
   }
 }
 
-void preProcessRepeatingRamp(int index, unsigned long now) {
+void preProcessRamp(int index, unsigned long now) {
   Ramp ramp = ramps[index];
   unsigned long elapsedTime = now - programStartTime;
   double overallProgress = ((double)elapsedTime - (double)ramp.start + (double)minEventTime) / (double)ramp.duration;
@@ -273,7 +284,7 @@ void preProcessRepeatingRamp(int index, unsigned long now) {
   if (cycleProgress > 1.0) {
     ramps[index].reversed = !ramps[index].reversed;
     ramps[index].cycleStart += ramp.dutyCycle;
-    preProcessRepeatingRamp(index, now);
+    preProcessRamp(index, now);
     return;
   }
 

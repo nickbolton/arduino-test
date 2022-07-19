@@ -287,20 +287,12 @@ void preProcessRamp(int index, double now) {
   double overallProgress = (timeInSong - ramp.start) / ramp.duration;
   double shapeOverallProgress = convertProgressToRampShape(index, overallProgress);
 
-//if (index == 0) {
-//    sendRemoteLogging(appendDouble("minEventTime ", minEventTime) + appendDouble("ramp.start ", ramp.start) + "\n");
-//}
+//  sendRemoteLogging(appendDouble("minEventTime ", minEventTime) + appendDouble("ramp.start ", ramp.start) + "\n");
 
   if (minEventTime >= ramp.start) {
     return;
   }
   
-//  if (index == 0) {
-//    sendRemoteLogging(appendDouble("overallProgress ", overallProgress) + appendDouble(" shapeOverallProgress ", shapeOverallProgress) + "\n");
-//    sendRemoteLogging(appendInt("ramp: ", index) + appendDouble(" elapsedTime ", elapsedTime) + appendDouble(" start ", ramp.start) + appendDouble(" duration ", ramp.duration) + appendDouble(" end ", ramp.end) + appendDouble(" overallProgress: ", overallProgress) + appendDouble(" shapeOverallProgress: ", shapeOverallProgress) + "\n");
-//  } else {
-//    return;
-//  }
   if (overallProgress >= 1.0) {
     if (ramp.currentValue != ramp.endValue && ramp.shape != SQUARE_SHAPE) {
       sendRemoteLogging(appendInt("end of ramp: ", index) + appendDouble(" start ", ramp.start) + appendDouble(" end ", ramp.end) + appendDouble(" minEventTime: ", (double)minEventTime) + appendDouble(" overallProgress: ", overallProgress) + "\n");
@@ -323,13 +315,9 @@ void preProcessRamp(int index, double now) {
   }
   double shapeProgress = convertProgressToRampShape(index, truncatedProgress);
     
-//  if (index == 0) {
-//    sendRemoteLogging(appendInt("ramp: ", index) + appendDouble(" elapsedTime ", elapsedTime) + appendDouble(" cycleStart: ", ramp.cycleStart) + appendDouble(" dutyCycle: ", ramp.dutyCycle) + appendDouble(" cycleEnd: ", (ramp.cycleStart + ramp.dutyCycle)) + appendInt(" reversed: ", (int)ramp.reversed) + appendDouble(" cycleProgress: ", cycleProgress) + appendDouble(" truncatedProgress: ", truncatedProgress) + appendDouble(" shapeProgress: ", shapeProgress) + "\n");
-//  }
+//  sendRemoteLogging(appendInt("ramp: ", index) + appendDouble(" elapsedTime ", elapsedTime) + appendDouble(" cycleStart: ", ramp.cycleStart) + appendDouble(" dutyCycle: ", ramp.dutyCycle) + appendDouble(" cycleEnd: ", (ramp.cycleStart + ramp.dutyCycle)) + appendInt(" reversed: ", (int)ramp.reversed) + appendDouble(" cycleProgress: ", cycleProgress) + appendDouble(" truncatedProgress: ", truncatedProgress) + appendDouble(" shapeProgress: ", shapeProgress) + "\n");
   if (timeInSong >= ramp.cycleStart) {
-//    if (index == 1) {
 //    sendRemoteLogging(appendDouble("ramping packet now: ", now) + appendDouble(" start ", ramp.start) + appendDouble(" end ", ramp.end) + appendDouble(" cycleProgress: ", cycleProgress) + "\n");
-//    }
     performRamp(index, shapeProgress, truncatedProgress, elapsedTime);      
   }  
 }

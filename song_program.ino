@@ -199,11 +199,16 @@ void parseSongProgram(const uint8_t *programArray) {
     ramp.endValue = programArray[idx++];
     ramp.reversed = 0;
     ramp.shape = programArray[idx++];
-    ramp.ended = minEventTime >= ramp.start;
+
+    if (status == RUNNING) {
+      ramp.ended = minEventTime >= ramp.start;
+    } else {
+      ramp.ended = false;
+    }
 
     if (ramp.duration > 0 && ramp.dutyCycle > 0) {
       ramps[rampIndex++] = ramp;
-      sendRemoteLogging(appendLong("ramp: ", rampSource) + appendDouble(", start: ", ramp.start) + appendDouble(", duration: ", ramp.duration) + appendDouble(", end: ", ramp.end) + appendDouble(", cycleStart: ", ramp.cycleStart) + appendDouble(", dutyCycle: ", ramp.dutyCycle) + appendDouble(", cycleEnd: ", (ramp.cycleStart + ramp.dutyCycle)) + appendByte(", startValue: ", ramp.startValue) + appendByte(", endValue: ", ramp.endValue) + appendByte(", shape: ", ramp.shape) + "\n");
+      sendRemoteLogging(appendLong("ramp: ", rampSource) + appendDouble(", start: ", ramp.start) + appendDouble(", duration: ", ramp.duration) + appendDouble(", end: ", ramp.end) + appendDouble(", cycleStart: ", ramp.cycleStart) + appendDouble(", dutyCycle: ", ramp.dutyCycle) + appendDouble(", cycleEnd: ", (ramp.cycleStart + ramp.dutyCycle)) + appendByte(", startValue: ", ramp.startValue) + appendByte(", endValue: ", ramp.endValue) + appendByte(", shape: ", ramp.shape) + appendInt(", ended: ", ramp.ended) + "\n");
     }
   }
   rampCount = rampIndex;
@@ -220,15 +225,8 @@ void resetRamps() {
     ramps[i].currentValue = -1;
     ramps[i].reversed = false;
     ramps[i].cycleStart = ramps[i].start;
-    ramps[i].ended = minEventTime >= ramps[i].start;
-  }
-}
-
-void enableRamps() {
-  for (int i=0; i<rampCount; i++) { 
-    ramps[i].currentValue = -1;
-    ramps[i].reversed = false;
-    ramps[i].cycleStart = ramps[i].start;
+    ramps[i].ended = minEventTime > ramps[i].start;
+    sendRemoteLogging(appendInt("ramp: ", i) + appendInt(" ended: ", ramps[i].ended) + "\n");
   }
 }
 

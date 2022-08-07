@@ -1,10 +1,10 @@
 
 
-const int RED_PIN =  5;
-const int GREEN_PIN =  3;
-const int BLUE_PIN =  4;
+const int RED_PIN =  3;
+const int GREEN_PIN =  4;
+const int BLUE_PIN =  5;
 
-const int LED_ON = 255;
+const int LED_ON = 127;
 const int LED_OFF = 0;
 
 unsigned long currentColor = 0;
@@ -47,15 +47,11 @@ void updateStatusColor() {
 
   if (_isConnected) {
     isLedOn = true;
-    if (currentColor > 0) {
-      showCurrentColor();      
-    } else {
-      showGreenLED();
-    }
+    showGreenLED();
   } else {
     isLedOn = !isLedOn;
     if (isLedOn) {
-      showYellowLED();
+      showRedLED();
     } else {
       clearLEDs();
     }
@@ -67,9 +63,17 @@ void setCurrentColor(unsigned long color) {
 }
 
 void showCurrentColor() {
-  int red = currentColor >> 16;
-  int green = (currentColor & 0xffff) >> 8;
-  int blue = currentColor & 0xff;
+  int rawRed = currentColor >> 16;
+  int rawGreen = (currentColor & 0xffff) >> 8;
+  int rawBlue = currentColor & 0xff;
+
+  float redPercent = (float)rawRed / 255.0;
+  float greenPercent = (float)rawGreen / 255.0;
+  float bluePercent = (float)rawBlue / 255.0;
+
+  int red = (int)(redPercent * 127.0);
+  int green = (int)(greenPercent * 127.0);
+  int blue = (int)(bluePercent * 127.0);
 
 //  String redString = appendInt("ble showing current color red: ", red);
 //  String greenString = appendInt(" green: ", green);

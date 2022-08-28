@@ -1,4 +1,8 @@
 
+unsigned long leftShift(const byte b, const byte bits) {
+  unsigned long value = (unsigned long)b;
+  return value << bits;
+}
 
 String appendBuffer(String str, int length, const uint8_t *data) {
   String result = str;

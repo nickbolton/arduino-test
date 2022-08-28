@@ -12,8 +12,3 @@ void setupBLE() {
 void handleBLEConnections() {
   handleBLEIncomingConnections();
 }
-
-unsigned long leftShift(const byte b, const byte bits) {
-  unsigned long value = (unsigned long)b;
-  return value << bits;
-}

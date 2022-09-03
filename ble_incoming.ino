@@ -1,6 +1,6 @@
 
 const char SERVICE_UUID[37] = "3E66DA80-68F7-4BCC-BA12-71D986031662";
-const char INCOMING_MIDI_UUID[37] = "698FFA77-1050-409A-8EC9-07377079432E";
+const char SONG_PROGRAM_UUID[37] = "698FFA77-1050-409A-8EC9-07377079432E";
 const char INCOMING_CHANNEL_UUID[37] = "653FA3B4-8DA0-4261-89A9-E35B39156B54";
 const char OUTGOING_MIDI_UUID[37] = "E143E11E-D44C-4C83-8195-D0041EBF09A1";
 const char LOGGING_UUID[37] = "AA369159-8F26-4FB5-A66F-ADF7D2D63008";
@@ -16,7 +16,7 @@ bool hasSentLoggingConnectionMessage = false;
 
 BLEService midiService(SERVICE_UUID); // BLE Service
 
-BLECharacteristic songProgram(INCOMING_MIDI_UUID, BLEWrite, MAX_PROGRAM_SIZE);
+BLECharacteristic songProgram(SONG_PROGRAM_UUID, BLEWrite, MAX_PROGRAM_SIZE);
 BLEUnsignedLongCharacteristic outgoingMidi(OUTGOING_MIDI_UUID, BLERead | BLENotify);
 BLEByteCharacteristic incomingChannel(INCOMING_CHANNEL_UUID, BLEWrite);
 BLECharacteristic logging(LOGGING_UUID, BLERead | BLENotify, 1024);
@@ -27,7 +27,7 @@ bool isConnected() {
 }
 
 void setupIncomingBLE() {
-  BLE.setLocalName("Setlist Gateway");
+  BLE.setLocalName("Petal Controller Gateway");
 
   // add the characteristics to the service
   midiService.addCharacteristic(songProgram);
@@ -37,8 +37,6 @@ void setupIncomingBLE() {
 
   outgoingMidi.writeValue(0l);
 
-  sendRemoteLogging("Hello\n");
-
   // add service
   BLE.addService(midiService);
 
@@ -47,6 +45,7 @@ void setupIncomingBLE() {
   // start advertising
   BLE.advertise();
 
+  sendRemoteLogging("Petal MIDI Controller says Hello\n");
   Serial.println("BLE Incoming initialized");
 }
 
@@ -70,12 +69,12 @@ void logConnectionChange() {
 void handleBLEIncomingConnections() {
   logConnectionChange();
   if (!isConnected()) { return; }
-  handleIncomingMidi();
+  handleIncomingProgram();
   handleIncomingChannel();
   handleLoggingInitialization();
 }
 
-void handleIncomingMidi() {
+void handleIncomingProgram() {
   if (!songProgram.written()) { return; }
   sendRemoteLogging(appendLong("ble rx song program length: ", (unsigned long)songProgram.valueLength()) + "\n");
   if (songProgram.valueLength() <= 0) { return; }

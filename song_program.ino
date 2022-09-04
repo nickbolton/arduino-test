@@ -258,8 +258,8 @@ void performRamp(int index, double progress, double linearProgress, double elaps
 //  if (ramps[index].count == 1 || force) {
   unsigned long basePacket =  ramp.source & 0xFFFFFF00;
   unsigned long packet = basePacket + (uint8_t)value;
-  sendRemoteLogging(appendInt("ramping packet index: ", index) + appendInt(" count: ", ramps[index].count) + appendDouble(" elapsed: ", elapsed) + ", base packet: " + packetString(basePacket) + appendUint8(" value ", value) + " updated: " + packetString(packet) + appendDouble(" progress: ", progress) + appendDouble(" linearProgress: ", linearProgress) + "\n");
-  sendRemoteLogging(appendDouble("shape metrics: ", linearProgress) + appendDouble(",", progress) + appendLong(",", value) + "\n");
+//  sendRemoteLogging(appendInt("ramping packet index: ", index) + appendInt(" count: ", ramps[index].count) + appendDouble(" elapsed: ", elapsed) + ", base packet: " + packetString(basePacket) + appendUint8(" value ", value) + " updated: " + packetString(packet) + appendDouble(" progress: ", progress) + appendDouble(" linearProgress: ", linearProgress) + "\n");
+//  sendRemoteLogging(appendDouble("shape metrics: ", linearProgress) + appendDouble(",", progress) + appendLong(",", value) + "\n");
   processPacket(packet);  
 //  }
 }

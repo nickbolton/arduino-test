@@ -1,4 +1,16 @@
 
+void debug(String str) {
+  if (isDebugLogging || isTraceLogging) {
+    sendRemoteLogging(str + "\n");
+  }
+}
+
+void trace(String str) {
+  if (isTraceLogging) {
+    sendRemoteLogging(str + "\n");
+  }
+}
+
 unsigned long leftShift(const byte b, const byte bits) {
   unsigned long value = (unsigned long)b;
   return value << bits;

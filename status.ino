@@ -1,8 +1,8 @@
 
 
 const int RED_PIN =  3;
-const int GREEN_PIN =  4;
-const int BLUE_PIN =  5;
+const int BLUE_PIN =  4;
+const int GREEN_PIN =  5;
 
 const int LED_ON = 127;
 const int LED_OFF = 0;
@@ -47,11 +47,15 @@ void updateStatusColor() {
 
   if (_isConnected) {
     isLedOn = true;
-    showGreenLED();
+    if (currentColor != 0) {
+      showCurrentColor();
+    } else {
+      showGreenLED();
+    }
   } else {
     isLedOn = !isLedOn;
     if (isLedOn) {
-      showRedLED();
+      showYellowLED();
     } else {
       clearLEDs();
     }

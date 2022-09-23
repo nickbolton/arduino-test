@@ -1,14 +1,20 @@
 
+int bleStatus = 0;
+
 void setupBLE() {
   // begin initialization
-  if (!BLE.begin()) {
-    Serial.println("starting BLE failed!");
 
-    while (1);
+   bleStatus = BLE.begin();
+  if (bleStatus) {
+    setupIncomingBLE();
+    Serial.println("BLE started successfull");
+  } else {
+    Serial.println("starting BLE failed!");
   }
-  setupIncomingBLE();
 }
 
 void handleBLEConnections() {
-  handleBLEIncomingConnections();
+  if (bleStatus) {
+    handleBLEIncomingConnections();
+  }
 }

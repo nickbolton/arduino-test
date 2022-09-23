@@ -1,5 +1,9 @@
 #include <MIDI.h>
+#include <AD524X.h>
 #include <ArduinoBLE.h>
+
+bool isDebugLogging = false;
+bool isTraceLogging = false;
 
 void setup() {
   Serial.begin(9600);
@@ -9,6 +13,7 @@ void setup() {
   setupMIDI();
   setupBLE();
   setupStatus();
+  setupVolume();
 }
 
 void loop() {

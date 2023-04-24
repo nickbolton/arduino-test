@@ -13,7 +13,6 @@ void setup() {
   setupMIDI();
   setupBLE();
   setupStatus();
-  setupVolume();
 }
 
 void loop() {

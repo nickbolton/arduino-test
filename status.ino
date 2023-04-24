@@ -1,11 +1,15 @@
 
 
-const int RED_PIN =  3;
-const int BLUE_PIN =  4;
-const int GREEN_PIN =  5;
+const int RED_PIN = 9;
+const int GREEN_PIN = 10;
+const int BLUE_PIN = 11;
 
-const int LED_ON = 127;
+const int LED_ON = 0xFF;
 const int LED_OFF = 0;
+
+double redDutyCycle = 0.0;
+double greenDutyCycle = 0.0;
+double blueDutyCycle = 0.0;
 
 unsigned long currentColor = 0;
 
@@ -43,7 +47,7 @@ void processStatus() {
 }
 
 void updateStatusColor() {
-//    sendRemoteLogging(appendInt("_isConnected: ", _isConnected) + appendInt("isLedOn: ", isLedOn) + appendLong("currentColor: ", currentColor) + "\n");
+//  sendRemoteLogging(appendInt("_isConnected: ", _isConnected) + appendInt("isLedOn: ", isLedOn) + appendLong("currentColor: ", currentColor) + "\n");
 
   if (_isConnected) {
     isLedOn = true;
@@ -75,44 +79,46 @@ void showCurrentColor() {
   float greenPercent = (float)rawGreen / 255.0;
   float bluePercent = (float)rawBlue / 255.0;
 
-  int red = (int)(redPercent * 127.0);
-  int green = (int)(greenPercent * 127.0);
-  int blue = (int)(bluePercent * 127.0);
+  int red = (int)(redPercent * 255.0);
+  int green = (int)(greenPercent * 255.0);
+  int blue = (int)(bluePercent * 255.0);
 
 //  String redString = appendInt("ble showing current color red: ", red);
 //  String greenString = appendInt(" green: ", green);
 //  String blueString = appendInt(" blue: ", blue);
 //  sendRemoteLogging(redString + greenString + blueString + "\n");
-  
+
+  setLEDColor(red, green, blue);
+}
+
+void setLEDColor(int red, int green, int blue) {
   analogWrite(RED_PIN, red);
   analogWrite(GREEN_PIN, green);
-  analogWrite(BLUE_PIN, blue);
+  analogWrite(BLUE_PIN, blue);  
 }
 
 void showYellowLED() {
 //  sendRemoteLogging("Showing YELLOW COLOR\n");
-  analogWrite(RED_PIN, LED_ON);
-  analogWrite(GREEN_PIN, LED_ON);
-  analogWrite(BLUE_PIN, LED_OFF);    
+  setLEDColor(0x7F, 0x7F, LED_OFF);
 }
 
 void showGreenLED() {
 //  sendRemoteLogging("Showing GREEN COLOR\n");
-  analogWrite(RED_PIN, LED_OFF);
-  analogWrite(GREEN_PIN, LED_ON);
-  analogWrite(BLUE_PIN, LED_OFF);  
+  setLEDColor(LED_OFF, LED_ON, LED_OFF);
 }
 
 void showRedLED() {
 //  sendRemoteLogging("Showing RED COLOR\n");
-  analogWrite(RED_PIN, LED_ON);
-  analogWrite(GREEN_PIN, LED_OFF);
-  analogWrite(BLUE_PIN, LED_OFF);  
+  setLEDColor(LED_ON, LED_OFF, LED_OFF);
+}
+
+void showBlueLED() {
+//  sendRemoteLogging("Showing BLUE COLOR\n");
+// #00A1E5
+  setLEDColor(LED_OFF, 0xA1, 0xE5);
 }
 
 void clearLEDs() {
 //  sendRemoteLogging("Showing CLEAR COLOR\n");
-  analogWrite(RED_PIN, LED_OFF);
-  analogWrite(GREEN_PIN, LED_OFF);
-  analogWrite(BLUE_PIN, LED_OFF);    
+  setLEDColor(LED_OFF, LED_OFF, LED_OFF);
 }

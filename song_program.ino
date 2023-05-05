@@ -26,7 +26,6 @@ struct ProgramEvent {
 
 enum EventType: uint8_t {
   MIDI_EVENT = 0,
-  VOLUME_EVENT,
 };
 
 enum ProgramStatus: unsigned long {
@@ -240,10 +239,6 @@ void processStartEvents() {
           processPacket(events[i].packet);
           setCurrentColor(events[i].color);
         break;
-        case VOLUME_EVENT:
-          sendRemoteLogging(appendInt("processing start volume: ", i) + appendInt(" of ", programEventCount) + " " + packetString(events[i].volumeValue) + "\n");
-          adjustVolume(events[i].volumeValue);
-        break;
       }
     }
   }
@@ -317,10 +312,6 @@ void processRunningEvents() {
         processPacket(events[programIndex].packet);
         setCurrentColor(events[programIndex].color);
       break;
-      case VOLUME_EVENT:
-        sendRemoteLogging(appendInt("processing volume: ", programIndex) + appendInt(" of ", programEventCount) + " " + packetString(events[programIndex].volumeValue) + "\n");
-        adjustVolume(events[programIndex].volumeValue);
-      break;
     }
   }
 }
@@ -367,8 +358,6 @@ void performRamp(int index, double progress, double linearProgress, double elaps
       unsigned long basePacket = ramp.source & 0xFFFFFF00;
       unsigned long packet = basePacket + (uint8_t)value;
       processPacket(packet);
-  } else if (ramps[index].eventType == VOLUME_EVENT) {
-    adjustVolume(value);
   }
 }
 

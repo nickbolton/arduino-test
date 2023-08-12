@@ -36,7 +36,7 @@ enum ProgramStatus: unsigned long {
   STOPPED,
 };
 
-const int MAX_EVENTS_SIZE = 1024;
+const int MAX_EVENTS_SIZE = 512;
 const uint8_t TRIANGLE_SHAPE = 0;
 const uint8_t SQUARE_SHAPE = 1;
 const uint8_t SINE_SHAPE = 2;

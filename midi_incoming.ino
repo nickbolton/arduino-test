@@ -1,6 +1,6 @@
 ///////////////////////////////
 
-byte incomingMidiChannel = 1;
+byte incomingMidiChannel = 16;
 byte resetDeviceControlNumber = 99;
 
 extern byte lastOutgoingChannel;
@@ -27,9 +27,9 @@ void processIncomingMIDI() {
 
 void handleProgramChange(byte channel, byte number) {
   if (channel != incomingMidiChannel) {
-//    String channelString = appendByte("Dropping pc message on channel: ", channel);
-//    String configuredString = appendByte(" (", incomingMidiChannel);
-//    sendRemoteLogging(channelString + configuredString + ")\n");
+   String channelString = appendByte("Dropping pc message on channel: ", channel);
+   String configuredString = appendByte(" (", incomingMidiChannel);
+   sendRemoteLogging(channelString + configuredString + ")\n");
     return;
   }
 
@@ -40,17 +40,19 @@ void handleProgramChange(byte channel, byte number) {
 
 void handleControlChange(byte channel, byte number, byte value) {
   if (channel != incomingMidiChannel) {
-//    String channelString = appendByte("Dropping cc message on channel: ", channel);
-//    String configuredString = appendByte(" (", incomingMidiChannel);
-//    sendRemoteLogging(channelString + configuredString + ")\n");
+    String channelString = appendByte("Dropping cc message on channel: ", channel);
+    String configuredString = appendByte(" (", incomingMidiChannel);
+    sendRemoteLogging(channelString + configuredString + ")\n");
     return;
   }
 
   if (channel == lastOutgoingChannel && number == lastOutgoingNumber && value == lastOutgoingValue) {
+    sendRemoteLogging("hello2\n");
     return;
   }
 
   if (number == resetDeviceControlNumber && value > 0) {
+    sendRemoteLogging("Device reset received…\n");
     reset();
     return;
   }

@@ -1,8 +1,13 @@
 
+// from schematic
+// const int RED_PIN = 9;
+// const int GREEN_PIN = 10;
+// const int BLUE_PIN = 11;
 
+// how it's wired, apparently green and blue are swapped
 const int RED_PIN = 9;
-const int GREEN_PIN = 10;
-const int BLUE_PIN = 11;
+const int GREEN_PIN = 11;
+const int BLUE_PIN = 10;
 
 const int LED_ON = 0xFF;
 const int LED_OFF = 0;

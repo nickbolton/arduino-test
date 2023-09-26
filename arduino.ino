@@ -1,5 +1,4 @@
 #include <MIDI.h>
-#include <AD524X.h>
 #include <ArduinoBLE.h>
 
 bool isDebugLogging = false;

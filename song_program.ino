@@ -212,7 +212,7 @@ void parseSongProgram(const uint8_t *programArray) {
 
     if (ramp.duration > 0 && ramp.dutyCycle > 0) {
       ramps[rampIndex++] = ramp;
-      sendRemoteLogging(appendLong("ramp: ", rampSource) + ", " + packetString(rampSource) + appendDouble(", start: ", ramp.start) + appendDouble(", duration: ", ramp.duration) + appendDouble(", end: ", ramp.end) + appendDouble(", cycleStart: ", ramp.cycleStart) + appendDouble(", dutyCycle: ", ramp.dutyCycle) + appendDouble(", cycleEnd: ", (ramp.cycleStart + ramp.dutyCycle)) + appendByte(", startValue: ", ramp.startValue) + appendByte(", endValue: ", ramp.endValue) + appendByte(", shape: ", ramp.shape) + appendInt(", ended: ", ramp.ended) + "\n");
+      sendRemoteLogging(appendLong("ramp: ", rampSource) + appendUint8(", eventType: ", ramp.eventType) + ", " + packetString(rampSource) + appendDouble(", start: ", ramp.start) + appendDouble(", duration: ", ramp.duration) + appendDouble(", end: ", ramp.end) + appendDouble(", cycleStart: ", ramp.cycleStart) + appendDouble(", dutyCycle: ", ramp.dutyCycle) + appendDouble(", cycleEnd: ", (ramp.cycleStart + ramp.dutyCycle)) + appendByte(", startValue: ", ramp.startValue) + appendByte(", endValue: ", ramp.endValue) + appendByte(", shape: ", ramp.shape) + appendInt(", ended: ", ramp.ended) + "\n");
     }
   }
   rampCount = rampIndex;
@@ -341,6 +341,7 @@ void performRamp(int index, double progress, double linearProgress, double elaps
   }
   
   if (isDebugLogging) {
+    debug(appendUint8("ramp.eventType: ", ramp.eventType) + "\n");
     debug(appendUint8("ramp.startValue: ", ramp.startValue) + "\n");
     debug(appendUint8("ramp.endValue: ", ramp.endValue) + "\n");
     debug(appendUint8("ramp.currentValue: ", ramp.currentValue) + "\n");
@@ -349,6 +350,9 @@ void performRamp(int index, double progress, double linearProgress, double elaps
   }
 
   if (value == ramp.currentValue) {
+      if (isDebugLogging) {
+        debug("Bailing on ramp value .. no change!\n");
+      }
     return;
   }
   ramps[index].currentValue = value;
@@ -358,6 +362,10 @@ void performRamp(int index, double progress, double linearProgress, double elaps
       unsigned long basePacket = ramp.source & 0xFFFFFF00;
       unsigned long packet = basePacket + (uint8_t)value;
       processPacket(packet);
+  } else {
+    if (isDebugLogging) {
+      debug("Bailing on ramp value .. wrong event type!\n");
+    }
   }
 }
 

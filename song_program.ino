@@ -70,6 +70,14 @@ void resetProgram() {
   processedStopEvents = false;
 }
 
+void unload() {
+  status = UNLOADED;
+  resetProgram();
+  stopEventsCount = 0;
+  setCurrentColor(0);
+  sendRemoteLogging("Song Program UNLOADED\n");
+}
+
 void parseSongProgram(const uint8_t *programArray) {
 
   if (isTraceLogging) {
@@ -94,15 +102,11 @@ void parseSongProgram(const uint8_t *programArray) {
 
   switch (newStatus) {
     case UNLOADED:
-      status = newStatus;
-      resetProgram();
-      stopEventsCount = 0;
-      setCurrentColor(0);
-      sendRemoteLogging("Song Program UNLOADED\n");
+      unload();
       return;
     case LOADED:
       if (status != UNLOADED) {
-        return;
+        unload();
       }
       status = newStatus;
       sendRemoteLogging("Song Program LOADED\n");
